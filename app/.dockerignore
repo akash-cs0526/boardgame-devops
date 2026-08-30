@@ -1,0 +1,7 @@
+target/*.original
+target/classes
+target/generated-sources
+target/maven-status
+target/site
+target/surefire-reports
+target/test-classes
