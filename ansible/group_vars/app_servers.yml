@@ -1,0 +1,10 @@
+aws_region: "ap-south-1"
+
+ecr_registry: "532217001462.dkr.ecr.ap-south-1.amazonaws.com"
+ecr_repository: "boardgame-app"
+image_tag: "latest"
+    
+host_port: 80         # The port open to the public on your EC2 instance
+app_container_name: "boardgame-app"
+app_port: 8080
+container_port: 8080

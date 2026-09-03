@@ -1,0 +1,110 @@
+---
+- name: Deploy Boardgame application
+  hosts: app_servers
+  become: true
+
+  tasks:
+
+    # --------------------------------------------------
+    # 1. Verify AWS identity
+    # --------------------------------------------------
+
+    - name: Verify EC2 IAM role
+      ansible.builtin.command:
+        cmd: aws sts get-caller-identity
+      register: aws_identity
+      changed_when: false
+
+    - name: Display AWS identity
+      ansible.builtin.debug:
+        var: aws_identity.stdout
+
+
+    # --------------------------------------------------
+    # 2. Login to Amazon ECR
+    # --------------------------------------------------
+
+    - name: Get ECR login password
+      ansible.builtin.shell:
+        cmd: "aws ecr get-login-password --region {{ aws_region }}"
+      register: ecr_password
+      changed_when: false
+      no_log: true
+
+    - name: Login to Amazon ECR
+      community.docker.docker_login:
+        registry_url: "{{ ecr_registry }}"
+        username: AWS
+        password: "{{ ecr_password.stdout }}"
+      no_log: true
+
+
+    # --------------------------------------------------
+    # 3. Pull application image
+    # --------------------------------------------------
+
+    - name: Pull Boardgame application image
+      community.docker.docker_image:
+        name: "{{ ecr_registry }}/{{ ecr_repository }}:{{ image_tag }}"
+        source: pull
+
+
+    # --------------------------------------------------
+    # 4. Stop existing container
+    # --------------------------------------------------
+
+    - name: Stop existing Boardgame container
+      community.docker.docker_container:
+        name: "{{ app_container_name }}"
+        state: stopped
+      ignore_errors: true
+
+
+    # --------------------------------------------------
+    # 5. Remove existing container
+    # --------------------------------------------------
+
+    - name: Remove existing Boardgame container
+      community.docker.docker_container:
+        name: "{{ app_container_name }}"
+        state: absent
+
+
+    # --------------------------------------------------
+    # 6. Start new container
+    # --------------------------------------------------
+
+    - name: Start Boardgame application
+      community.docker.docker_container:
+        name: "{{ app_container_name }}"
+        image: "{{ ecr_registry }}/{{ ecr_repository }}:{{ image_tag }}"
+        state: started
+        restart_policy: unless-stopped
+        published_ports:
+          - "{{ host_port }}:{{ container_port }}"
+
+
+    # --------------------------------------------------
+    # 7. Wait for application
+    # --------------------------------------------------
+
+    - name: Wait for application port
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ host_port }}"
+        delay: 5
+        timeout: 60
+
+
+    # --------------------------------------------------
+    # 8. Verify container
+    # --------------------------------------------------
+
+    - name: Get Boardgame container information
+      community.docker.docker_container_info:
+        name: "{{ app_container_name }}"
+      register: container_info
+
+    - name: Display container status
+      ansible.builtin.debug:
+        msg: "Boardgame container is {{ container_info.container.State.Status }}"

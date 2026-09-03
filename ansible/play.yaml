@@ -1,0 +1,18 @@
+---
+- name: Configure Boardgame EC2
+  hosts: app_servers
+  become: true
+
+  tasks:
+
+    - name: Update apt package cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - unzip
+        state: present

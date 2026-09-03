@@ -1,0 +1,21 @@
+    - name: Add ubuntu user to docker group
+      hosts: app_servers
+      become: true
+      tasks:
+        - name: Add ubuntu to docker group      
+          ansible.builtin.user:
+            name: ubuntu
+            groups: docker
+            append: true
+        - name: Create application directories
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: directory
+            owner: ubuntu
+            group: ubuntu
+            mode: '0755'
+          loop:
+            - /opt/boardgame
+            - /opt/boardgame/config
+            - /opt/boardgame/logs
+            - /opt/boardgame/scripts
