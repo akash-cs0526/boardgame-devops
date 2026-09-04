@@ -19,7 +19,7 @@ pipeline {
 
         stage('Build & Test') {
             environment {
-                JAVA_HOME = '/usr/lib/jvm/java-11-amazon-corretto'
+                JAVA_HOME = '/usr/lib/jvm/java-1.11.0-openjdk-amd64'
                 PATH      = "${env.JAVA_HOME}/bin:${env.PATH}"
             }
             steps {
