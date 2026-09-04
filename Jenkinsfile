@@ -56,18 +56,5 @@ pipeline {
                 """
             }
         }
-
-        stage('Deploy') {
-            steps {
-                sshagent(['boardgame-ec2-ssh']) {
-                    sh """
-                        ansible-playbook \
-                        -i ansible/inventory \
-                        ansible/playbook.yml \
-                        -e "image_tag=${IMAGE_TAG}"
-                    """
-                }
-            }
-        }
     }
 }
