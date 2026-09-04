@@ -18,6 +18,10 @@ pipeline {
         }
 
         stage('Build & Test') {
+            environment {
+                JAVA_HOME = '/usr/lib/jvm/java-11-amazon-corretto'
+                PATH      = "${env.JAVA_HOME}/bin:${env.PATH}"
+            }
             steps {
                 dir('app') {
                     // Give the Maven wrapper script execution rights
