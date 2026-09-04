@@ -67,6 +67,7 @@ pipeline {
             steps {
                 sshagent(['boardgame-ec2-ssh']) {
                     sh """
+                        ANSIBLE_HOST_KEY_CHECKING=False \
                         ansible-playbook \
                         -i ansible/inventory \
                         ansible/deploy.yaml \
