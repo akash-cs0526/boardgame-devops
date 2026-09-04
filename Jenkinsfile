@@ -69,7 +69,7 @@ pipeline {
                     sh """
                         ansible-playbook \
                         -i ansible/inventory \
-                        ansible/deploy.yml \
+                        ansible/deploy.yaml \
                         -e "image_tag=${IMAGE_TAG}"
                     """
                 }
