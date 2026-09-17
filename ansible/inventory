@@ -1,2 +1,2 @@
 [app_servers]
-boardgame-app-server ansible_host=13.127.229.49 ansible_user=ubuntu
+boardgame-app-server ansible_host=13.233.173.123 ansible_user=ubuntu
