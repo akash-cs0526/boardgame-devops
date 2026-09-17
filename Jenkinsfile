@@ -24,6 +24,25 @@ pipeline {
                 }
             }
         }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                dir('app') {
+                // withSonarQubeEnv automatically injects SONAR_TOKEN if configured correctly in Jenkins
+                    withSonarQubeEnv('SonarQube') { 
+                        sh './mvnw sonar:sonar -Dsonar.projectKey=Boardgame'
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
