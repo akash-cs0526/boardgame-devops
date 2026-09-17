@@ -18,8 +18,14 @@ pipeline {
         }
 
         stage('Build & Test') {
+            environment {
+                JAVA_HOME = '/usr/lib/jvm/java-1.11.0-openjdk-amd64'
+                PATH      = "${env.JAVA_HOME}/bin:${env.PATH}"
+            }
             steps {
                 dir('app') {
+                    // Give the Maven wrapper script execution rights
+                    sh 'chmod +x ./mvnw'
                     sh './mvnw clean test'
                 }
             }
@@ -43,6 +49,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Build Docker Image') {
             steps {
@@ -73,6 +80,20 @@ pipeline {
                     docker push \
                     ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
                 """
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['boardgame-ec2-ssh']) {
+                    sh """
+                        ANSIBLE_HOST_KEY_CHECKING=False \
+                        ansible-playbook \
+                        -i ansible/inventory \
+                        ansible/deploy.yaml \
+                        -e "image_tag=${IMAGE_TAG}"
+                    """
+                }
             }
         }
     }
