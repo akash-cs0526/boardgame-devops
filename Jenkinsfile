@@ -26,10 +26,11 @@ pipeline {
                 dir('app') {
                     // Give the Maven wrapper script execution rights
                     sh 'chmod +x ./mvnw'
-                    sh './mvnw clean package -DskipTests'
+                    sh './mvnw clean test'
                 }
             }
         }
+        
 
         stage('Build Docker Image') {
             steps {
