@@ -92,6 +92,27 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			 <!-- New OWASP Dependency-Check Plugin -->
+	        <plugin>
+	            <groupId>org.owasp</groupId>
+	            <artifactId>dependency-check-maven</artifactId>
+	            <version>12.1.0</version>
+	            <configuration>
+	                <!-- This formats the output as HTML and JSON for Jenkins/SonarQube ingestion -->
+	                <format>ALL</format>
+	                <!-- This places the reports into your target folder -->
+	                <outputDirectory>${project.build.directory}/dependency-check</outputDirectory>
+	            </configuration>
+	            <executions>
+	                <execution>
+	                    <goals>
+	                        <goal>check</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	        </plugin>
+	    </plugins>
+	</build>
 
 			<plugin>
     <groupId>org.jacoco</groupId>
