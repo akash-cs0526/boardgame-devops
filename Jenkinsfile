@@ -61,6 +61,15 @@ pipeline {
             }
         }
 
+        stage('Publish OWASP Results') {
+            steps {
+                dependencyCheckPublisher(
+                    pattern: 'app/target/dependency-check/dependency-check-report.xml',
+                    stopBuild: false
+                )
+            }
+        }
+
 
 
         stage('Build Docker Image') {
