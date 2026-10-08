@@ -84,6 +84,34 @@ pipeline {
             }
         }
 
+        
+        stage('Trivy Image Scan') {
+            steps {
+                withEnv(['TMPDIR=/var/tmp/trivy-tmp']) {
+                    sh '''
+                        mkdir -p reports
+
+                        trivy image \
+                            --scanners vuln \
+                            --severity HIGH,CRITICAL \
+                            --format json \
+                            --output reports/trivy-report.json \
+                            --exit-code 0 \
+                            ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts(
+                        artifacts: 'reports/trivy-report.json',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+
+
         stage('Login to ECR') {
             steps {
                 sh """
