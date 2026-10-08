@@ -49,6 +49,18 @@ pipeline {
                 }
             }
         }
+        
+        stage('OWASP Dependency Check') {
+            steps {
+                dir('app') {
+                    withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_KEY')]) {
+                // The pipeline uses the API key to bypass the 403 rate limits cleanly
+                        sh """./mvnw dependency-check:check -DnvdApiKey=${NVD_KEY} -DossindexAnalyzerEnabled=false"""
+                    }
+                }
+            }
+        }
+
 
 
         stage('Build Docker Image') {
