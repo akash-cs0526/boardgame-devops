@@ -54,9 +54,17 @@ pipeline {
             steps {
                 dir('app') {
                     withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_KEY')]) {
+                        withEnv(['MAVEN_OPTS=-Xms256m -Xmx400m -XX:+UseSerialGC']) {
                 // The pipeline uses the API key to bypass the 403 rate limits cleanly
-                        sh """./mvnw dependency-check:check -DnvdApiKey=${NVD_KEY} -DossindexAnalyzerEnabled=false"""
-                    }
+                              sh """./mvnw dependency-check:check \
+                                    -DnvdApiKey=${NVD_KEY} \
+                                    -DossindexAnalyzerEnabled=false \
+                                    -DcentralAnalyzerEnabled=false \
+                                    -DdownloadConnectionTimeout=120000 \
+                                    -DdownloadMaxConnections=1
+                              """
+                        }
+                    }   
                 }
             }
         }
