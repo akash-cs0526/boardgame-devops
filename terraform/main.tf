@@ -78,6 +78,15 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description     = "monitoring"
+    from_port       = 9100
+    to_port         = 9100
+    protocol        = "tcp"
+    security_groups = [aws_security_group.monitoring_sg.id]
+  }
+
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -87,6 +96,39 @@ resource "aws_security_group" "ec2_sg" {
 
   tags = {
     Name = "boardgame-sg"
+  }
+}
+
+resource "aws_security_group" "monitoring_sg" {
+  name        = "bg-monitoring-sg"
+  description = "sg for Prometheus and grafana"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "ssh from trusted ip"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.monitoring_admin_cidr]
+  }
+
+  ingress {
+    description = "Grafana from trusted ip"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = [var.monitoring_admin_cidr]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "bg-monitoring-sg"
   }
 }
 
@@ -142,15 +184,33 @@ data "aws_ami" "ubuntu" {
 
 # 9. EC2 Instance Configuration
 resource "aws_instance" "web" {
-  ami                  = data.aws_ami.ubuntu.id
-  instance_type        = var.instance_type
-  subnet_id            = aws_subnet.public.id
+  ami                    = "ami-002a6ae76416021fe"
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  key_name             = aws_key_pair.deployer_key.key_name
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.id
+  key_name               = aws_key_pair.deployer_key.key_name
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.id
 
   tags = {
     Name = "boardgame-app-server"
   }
 }
 
+resource "aws_instance" "monitoring" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3.small"
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.monitoring_sg.id]
+  key_name                    = aws_key_pair.deployer_key.key_name
+  associate_public_ip_address = true
+
+
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = "bg-monitoring-server"
+  }
+}

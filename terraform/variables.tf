@@ -18,3 +18,8 @@ variable "instance_type" {
   default = "t3.micro"
 }
 
+variable "monitoring_admin_cidr" {
+  default = "103.197.74.170/32"
+  type    = string
+}
+
